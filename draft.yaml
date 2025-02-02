@@ -1,36 +1,134 @@
 models:
-  Conference:
+  User:
     name: string
-    description: string
-    start_date: datetime
-    end_date: datetime
-    status: string
-    region: string
-    venue_id: unsignedInteger nullable
+    email: string unique
+    password: string
+    role: enum:admin,manager,receptionist,guest
+    timestamps: true
     relationships:
-      belongsTo: Venue
-      belongsToMany: Speaker, Talk
+      hasMany: Booking, Review, Notification, Log, PusherEvent
 
-  Venue:
+  Hotel:
     name: string
-    city: string
-    country: string
-    postal_code: string
+    address: text
+    phone: string
+    email: string unique
+    website: string nullable
+    timestamps: true
     relationships:
-      hasMany: Conference
+      hasMany: Room, Employee, Amenity, Review
 
-  Speaker:
+  Employee:
+    hotel_id: id foreign:hotels
+    user_id: id foreign:users
+    role: enum:receptionist,cleaner,manager
+    salary: decimal:10,2
+    timestamps: true
+
+  Room:
+    hotel_id: id foreign:hotels
+    room_number: string
+    type: enum:single,double,suite
+    price: decimal:10,2
+    status: enum:available,booked,maintenance
+    max_occupancy: integer
+    timestamps: true
+    relationships:
+      hasMany: RoomAmenity, RoomImage, Booking, MaintenanceRequest
+
+  Booking:
+    user_id: id foreign:users
+    hotel_id: id foreign:hotels
+    room_id: id foreign:rooms
+    check_in_date: date
+    check_out_date: date
+    total_price: decimal:10,2
+    status: enum:pending,confirmed,checked_in,cancelled
+    timestamps: true
+    relationships:
+      hasMany: Guest, Payment, Invoice
+
+  Guest:
+    booking_id: id foreign:bookings
     name: string
     email: string
-    bio: text
-    twitter_handle: string
-    relationships:
-      belongsToMany: Conference
+    phone: string
+    id_document: string nullable
+    timestamps: true
 
-  Talk:
-    title: string
-    abstract: text
-    speaker_id: unsignedInteger
+  Payment:
+    booking_id: id foreign:bookings
+    amount: decimal:10,2
+    payment_method: enum:credit_card,paypal,cash
+    status: enum:pending,completed,failed,refunded
+    timestamps: true
     relationships:
-      belongsTo: Speaker
-      belongsToMany: Conference
+      hasOne: Refund
+
+  Invoice:
+    booking_id: id foreign:bookings
+    total_amount: decimal:10,2
+    pdf_url: string
+    timestamps: true
+
+  Refund:
+    payment_id: id foreign:payments
+    amount: decimal:10,2
+    reason: text
+    status: enum:requested,approved,rejected,processed
+    timestamps: true
+
+  DiscountCoupon:
+    code: string unique
+    discount_percentage: decimal:5,2
+    expiration_date: date
+    timestamps: true
+
+  Amenity:
+    hotel_id: id foreign:hotels
+    name: string
+    description: text nullable
+    timestamps: true
+    relationships:
+      hasMany: RoomAmenity
+
+  RoomAmenity:
+    room_id: id foreign:rooms
+    amenity_id: id foreign:amenities
+
+  RoomImage:
+    room_id: id foreign:rooms
+    image_url: string
+    timestamps: true
+
+  MaintenanceRequest:
+    room_id: id foreign:rooms
+    employee_id: id foreign:employees
+    issue_description: text
+    status: enum:pending,in_progress,completed
+    timestamps: true
+
+  Review:
+    user_id: id foreign:users
+    hotel_id: id foreign:hotels
+    rating: integer
+    comment: text nullable
+    timestamps: true
+
+  Notification:
+    user_id: id foreign:users
+    message: text
+    status: enum:unread,read
+    timestamps: true
+
+  PusherEvent:
+    user_id: id foreign:users nullable
+    event_name: string
+    payload: json
+    timestamps: true
+
+  Log:
+    user_id: id foreign:users
+    action: string
+    details: text nullable
+    timestamps: true

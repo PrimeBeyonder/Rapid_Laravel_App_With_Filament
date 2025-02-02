@@ -1,21 +1,74 @@
 created:
-    - database/factories/ConferenceFactory.php
-    - database/factories/VenueFactory.php
-    - database/factories/SpeakerFactory.php
-    - database/factories/TalkFactory.php
-    - database/migrations/2025_01_22_153436_create_conferences_table.php
-    - database/migrations/2025_01_22_153437_create_venues_table.php
-    - database/migrations/2025_01_22_153438_create_speakers_table.php
-    - database/migrations/2025_01_22_153439_create_talks_table.php
-    - database/migrations/2025_01_22_153440_create_conference_speaker_table.php
-    - database/migrations/2025_01_22_153441_create_conference_talk_table.php
-    - app/Models/Conference.php
-    - app/Models/Venue.php
-    - app/Models/Speaker.php
-    - app/Models/Talk.php
+    - database/factories/UserFactory.php
+    - database/factories/HotelFactory.php
+    - database/factories/EmployeeFactory.php
+    - database/factories/RoomFactory.php
+    - database/factories/BookingFactory.php
+    - database/factories/GuestFactory.php
+    - database/factories/PaymentFactory.php
+    - database/factories/InvoiceFactory.php
+    - database/factories/RefundFactory.php
+    - database/factories/DiscountCouponFactory.php
+    - database/factories/AmenityFactory.php
+    - database/factories/RoomAmenityFactory.php
+    - database/factories/RoomImageFactory.php
+    - database/factories/MaintenanceRequestFactory.php
+    - database/factories/ReviewFactory.php
+    - database/factories/NotificationFactory.php
+    - database/factories/PusherEventFactory.php
+    - database/factories/LogFactory.php
+    - database/migrations/2025_02_02_155057_create_users_table.php
+    - database/migrations/2025_02_02_155058_create_hotels_table.php
+    - database/migrations/2025_02_02_155059_create_employees_table.php
+    - database/migrations/2025_02_02_155100_create_rooms_table.php
+    - database/migrations/2025_02_02_155101_create_bookings_table.php
+    - database/migrations/2025_02_02_155102_create_guests_table.php
+    - database/migrations/2025_02_02_155103_create_payments_table.php
+    - database/migrations/2025_02_02_155104_create_invoices_table.php
+    - database/migrations/2025_02_02_155105_create_refunds_table.php
+    - database/migrations/2025_02_02_155106_create_discount_coupons_table.php
+    - database/migrations/2025_02_02_155107_create_amenities_table.php
+    - database/migrations/2025_02_02_155108_create_room_amenities_table.php
+    - database/migrations/2025_02_02_155109_create_room_images_table.php
+    - database/migrations/2025_02_02_155110_create_maintenance_requests_table.php
+    - database/migrations/2025_02_02_155111_create_reviews_table.php
+    - database/migrations/2025_02_02_155112_create_notifications_table.php
+    - database/migrations/2025_02_02_155113_create_pusher_events_table.php
+    - database/migrations/2025_02_02_155114_create_logs_table.php
+    - app/Models/User.php
+    - app/Models/Hotel.php
+    - app/Models/Employee.php
+    - app/Models/Room.php
+    - app/Models/Booking.php
+    - app/Models/Guest.php
+    - app/Models/Payment.php
+    - app/Models/Invoice.php
+    - app/Models/Refund.php
+    - app/Models/DiscountCoupon.php
+    - app/Models/Amenity.php
+    - app/Models/RoomAmenity.php
+    - app/Models/RoomImage.php
+    - app/Models/MaintenanceRequest.php
+    - app/Models/Review.php
+    - app/Models/Notification.php
+    - app/Models/PusherEvent.php
+    - app/Models/Log.php
 models:
-    User: {  }
-    Conference: { name: string, description: string, start_date: datetime, end_date: datetime, status: string, region: string, venue_id: 'unsignedInteger nullable', relationships: { belongsTo: Venue, belongsToMany: 'Speaker, Talk' } }
-    Venue: { name: string, city: string, country: string, postal_code: string, relationships: { hasMany: Conference } }
-    Speaker: { name: string, email: string, bio: text, twitter_handle: string, relationships: { belongsToMany: Conference } }
-    Talk: { title: string, abstract: text, speaker_id: unsignedInteger, relationships: { belongsTo: Speaker, belongsToMany: Conference } }
+    User: { name: string, email: 'string unique', password: string, role: 'enum:admin,manager,receptionist,guest', timestamps: timestamps, relationships: { hasMany: 'Booking, Review, Notification, Log, PusherEvent' } }
+    Hotel: { name: string, address: text, phone: string, email: 'string unique', website: 'string nullable', timestamps: timestamps, relationships: { hasMany: 'Room, Employee, Amenity, Review' } }
+    Employee: { hotel_id: 'id foreign:hotels', user_id: 'id foreign:users', role: 'enum:receptionist,cleaner,manager', salary: 'decimal:10,2', timestamps: timestamps }
+    Room: { hotel_id: 'id foreign:hotels', room_number: string, type: 'enum:single,double,suite', price: 'decimal:10,2', status: 'enum:available,booked,maintenance', max_occupancy: integer, timestamps: timestamps, relationships: { hasMany: 'RoomAmenity, RoomImage, Booking, MaintenanceRequest' } }
+    Booking: { user_id: 'id foreign:users', hotel_id: 'id foreign:hotels', room_id: 'id foreign:rooms', check_in_date: date, check_out_date: date, total_price: 'decimal:10,2', status: 'enum:pending,confirmed,checked_in,cancelled', timestamps: timestamps, relationships: { hasMany: 'Guest, Payment, Invoice' } }
+    Guest: { booking_id: 'id foreign:bookings', name: string, email: string, phone: string, id_document: 'string nullable', timestamps: timestamps }
+    Payment: { booking_id: 'id foreign:bookings', amount: 'decimal:10,2', payment_method: 'enum:credit_card,paypal,cash', status: 'enum:pending,completed,failed,refunded', timestamps: timestamps, relationships: { hasOne: Refund } }
+    Invoice: { booking_id: 'id foreign:bookings', total_amount: 'decimal:10,2', pdf_url: string, timestamps: timestamps }
+    Refund: { payment_id: 'id foreign:payments', amount: 'decimal:10,2', reason: text, status: 'enum:requested,approved,rejected,processed', timestamps: timestamps }
+    DiscountCoupon: { code: 'string unique', discount_percentage: 'decimal:5,2', expiration_date: date, timestamps: timestamps }
+    Amenity: { hotel_id: 'id foreign:hotels', name: string, description: 'text nullable', timestamps: timestamps, relationships: { hasMany: RoomAmenity } }
+    RoomAmenity: { room_id: 'id foreign:rooms', amenity_id: 'id foreign:amenities' }
+    RoomImage: { room_id: 'id foreign:rooms', image_url: string, timestamps: timestamps }
+    MaintenanceRequest: { room_id: 'id foreign:rooms', employee_id: 'id foreign:employees', issue_description: text, status: 'enum:pending,in_progress,completed', timestamps: timestamps }
+    Review: { user_id: 'id foreign:users', hotel_id: 'id foreign:hotels', rating: integer, comment: 'text nullable', timestamps: timestamps }
+    Notification: { user_id: 'id foreign:users', message: text, status: 'enum:unread,read', timestamps: timestamps }
+    PusherEvent: { user_id: 'id foreign:users nullable', event_name: string, payload: json, timestamps: timestamps }
+    Log: { user_id: 'id foreign:users', action: string, details: 'text nullable', timestamps: timestamps }

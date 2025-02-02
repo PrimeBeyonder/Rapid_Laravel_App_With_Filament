@@ -4,16 +4,17 @@ namespace Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
-use App\Models\User;
+use App\Models\Booking;
+use App\Models\Invoice;
 
-class UserFactory extends Factory
+class InvoiceFactory extends Factory
 {
     /**
      * The name of the factory's corresponding model.
      *
      * @var string
      */
-    protected $model = User::class;
+    protected $model = Invoice::class;
 
     /**
      * Define the model's default state.
@@ -21,10 +22,9 @@ class UserFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => $this->faker->name(),
-            'email' => $this->faker->safeEmail(),
-            'password' => $this->faker->password(),
-            'role' => $this->faker->randomElement(["admin","manager","receptionist","guest"]),
+            'booking_id' => Booking::factory(),
+            'total_amount' => $this->faker->randomFloat(2, 0, 99999999.99),
+            'pdf_url' => $this->faker->word(),
         ];
     }
 }
